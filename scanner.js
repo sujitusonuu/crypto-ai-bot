@@ -1,12 +1,13 @@
-// scanner.js — V8.1 Hardened Cloud AI Quant Scanner (Walk-Forward + Volume + Crash-Proof Telegram)
+// scanner.js — V8.2 Cloud AI Quant Scanner with Configurable Timeframe & News Shield
 const COINS = ['BTC', 'ETH', 'SOL', 'BNB', 'XRP', 'DOGE', 'ADA', 'AVAX', 'SUI', 'LINK', 'TRX', 'TON', 'NEAR', 'PEPE', 'SHIB'];
 const TRADE_MODE = 'FUTURES'; // 'FUTURES' or 'SPOT'
-const LEVERAGE = 3;
+const LEVERAGE = 3;           // Default safe leverage
+const TIMEFRAME = '4h';       // Change anytime to '1h' (fast), '4h' (balanced), '8h' (smooth), or '1d' (macro)
 
 const BULLISH_WORDS = ['surge', 'surges', 'rally', 'rallies', 'bull', 'bullish', 'breakout', 'adopt', 'adoption', 'partnership', 'upgrade', 'etf', 'inflow', 'inflows', 'record', 'high', 'soar', 'soars', 'gain', 'gains', 'launch', 'approve', 'approved', 'institutional', 'accumulate'];
 const BEARISH_WORDS = ['hack', 'hacked', 'exploit', 'crash', 'crashes', 'plunge', 'plunges', 'bear', 'bearish', 'ban', 'lawsuit', 'sec', 'outflow', 'outflows', 'dump', 'dumps', 'drop', 'drops', 'slump', 'outage', 'halt', 'delist', 'liquidate', 'liquidation', 'fraud', 'scam', 'selloff'];
 
-// Strips special characters so Telegram Markdown never crashes on weird news headlines
+// Strips special characters so Telegram Markdown never crashes on headlines
 function cleanText(str) {
   return String(str || '').replace(/[_*[\]()~`>#+=|{}.!-]/g, ' ').replace(/\s+/g, ' ').trim();
 }
@@ -59,8 +60,8 @@ function computeATRPercent(candles, period = 14) {
 async function fetchCandles(symbol) {
   const pair = symbol + 'USDT';
   const urls = [
-    `https://data-api.binance.vision/api/v3/klines?symbol=${pair}&interval=1h&limit=250`,
-    `https://api.binance.com/api/v3/klines?symbol=${pair}&interval=1h&limit=250`
+    `https://data-api.binance.vision/api/v3/klines?symbol=${pair}&interval=${TIMEFRAME}&limit=250`,
+    `https://api.binance.com/api/v3/klines?symbol=${pair}&interval=${TIMEFRAME}&limit=250`
   ];
   for (const url of urls) {
     try {
@@ -74,14 +75,15 @@ async function fetchCandles(symbol) {
       }
     } catch (e) {}
   }
-  const ccRes = await fetch(`https://min-api.cryptocompare.com/data/v2/histohour?fsym=${symbol}&tsym=USD&limit=250`);
+  const ccInterval = TIMEFRAME === '1d' ? 'histoday' : 'histohour';
+  const ccRes = await fetch(`https://min-api.cryptocompare.com/data/v2/${ccInterval}?fsym=${symbol}&tsym=USD&limit=250`);
   const ccJson = await ccRes.json();
   return ccJson.Data.Data.map(c => ({
     time: c.time * 1000, open: parseFloat(c.open), high: parseFloat(c.high), low: parseFloat(c.low), close: parseFloat(c.close), volume: parseFloat(c.volumeto || 1)
   }));
 }
 
-// Walk-Forward Mini-Optimizer: Tests RSI thresholds on the coin's past 250 hours before checking live candle
+// Walk-Forward Mini-Optimizer
 function optimizeRsiThresholds(candles, closes, rsis, ema50s, tpPct, slPct) {
   const buyCandidates = [30, 33, 36, 39];
   const sellCandidates = [61, 64, 67, 70];
@@ -164,7 +166,7 @@ async function runScanner() {
       const candles = await fetchCandles(coin);
       const closes = candles.map(c => c.close);
       const livePrice = closes[closes.length - 1];
-      const idx = closes.length - 2; // Confirmed closed candle
+      const idx = closes.length - 2;
 
       const rsis = computeRSIArray(closes, 14);
       const ema50s = computeEMAArray(closes, 50);
@@ -173,7 +175,6 @@ async function runScanner() {
       const tpPct = Number(Math.max(3.5, Math.min(8.5, atrPct * 2.4)).toFixed(1));
       const slPct = Number(Math.max(2.5, Math.min(5.5, atrPct * 1.5)).toFixed(1));
 
-      // Walk-forward self-tuning per coin
       const tuned = optimizeRsiThresholds(candles, closes, rsis, ema50s, tpPct, slPct);
       const buyThreshold = tuned.buyRsi;
       const sellThreshold = tuned.sellRsi;
@@ -216,24 +217,24 @@ async function runScanner() {
   }
 
   if (triggered.length > 0) {
-    let msg = `🤖 *V8.1 WALK-FORWARD AI ALERT* 🤖\nFound *${triggered.length}* confirmed setup(s):\n\n`;
+    let msg = `🤖 *V8.2 (${TIMEFRAME}) AI ALERT* 🤖\nFound *${triggered.length}* confirmed setup(s):\n\n`;
     triggered.forEach(t => {
       msg += `🔥 *${t.coin}/USDT* — ${t.label}\n` +
              `💰 *Entry:* ${fmtPrice(t.livePrice)}\n` +
              `🎯 *Take-Profit:* ${fmtPrice(t.tpPrice)} (${t.isShort ? '-' : '+'}${t.tpPct}%)\n` +
              `🛑 *Stop-Loss:* ${fmtPrice(t.slPrice)} (${t.isShort ? '+' : '-'}${t.slPct}%)\n` +
-             `📊 *RSI Hook:* ${t.rsiPrev.toFixed(1)} → *${t.rsiNow.toFixed(1)}* (Tuned Zone: ${t.buyThreshold}/${t.sellThreshold})\n` +
+             `📊 *RSI Hook:* ${t.rsiPrev.toFixed(1)} → *${t.rsiNow.toFixed(1)}* (Timeframe: ${TIMEFRAME})\n` +
              `📰 *News (${t.newsScore}):* _"${t.headline}"_\n\n`;
     });
     await sendTelegram(token, chatId, msg);
   } else if (isManualRun) {
     closestCoins.sort((a, b) => a.rsiNow - b.rsiNow);
-    const top3Oversold = closestCoins.slice(0, 3).map(c => `• *${c.coin}:* RSI ${c.rsiNow.toFixed(1)} (Buy Zone <= ${c.buyThreshold}) — ${fmtPrice(c.livePrice)}`).join('\n');
-    const top2Overbought = closestCoins.slice(-2).reverse().map(c => `• *${c.coin}:* RSI ${c.rsiNow.toFixed(1)} (Sell Zone >= ${c.sellThreshold}) — ${fmtPrice(c.livePrice)}`).join('\n');
+    const top3Oversold = closestCoins.slice(0, 3).map(c => `• *${c.coin}:* RSI ${c.rsiNow.toFixed(1)} (${fmtPrice(c.livePrice)})`).join('\n');
+    const top2Overbought = closestCoins.slice(-2).reverse().map(c => `• *${c.coin}:* RSI ${c.rsiNow.toFixed(1)} (${fmtPrice(c.livePrice)})`).join('\n');
 
     const testMsg =
-      `✅ *V8.1 Walk-Forward AI Bot is LIVE!*\n\n` +
-      `Scanned & auto-tuned all 15 coins across 250 hours of history. *0 coins* have an immediate confirmed entry this hour.\n\n` +
+      `✅ *V8.2 Bot Live (${TIMEFRAME} Timeframe)*\n\n` +
+      `Scanned all 15 coins on the *${TIMEFRAME}* chart. *0 coins* have an immediate confirmed entry this candle.\n\n` +
       `📉 *Closest to BUY / LONG:*\n${top3Oversold}\n\n` +
       `📈 *Closest to SELL / SHORT:*\n${top2Overbought}`;
     await sendTelegram(token, chatId, testMsg);
