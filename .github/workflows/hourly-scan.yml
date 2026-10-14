@@ -1,0 +1,26 @@
+name: 24-7 Crypto AI Scanner
+
+on:
+  schedule:
+    # Runs automatically at Minute 2 of every hour, 24/7 (right after the 1-Hour candle closes!)
+    - cron: '2 * * * *'
+  workflow_dispatch: # Lets you click a button to test it anytime manually!
+
+jobs:
+  scan-market:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run V7 AI Crypto Scanner
+        env:
+          TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
+          TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
+        run: node scanner.js
