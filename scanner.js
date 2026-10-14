@@ -1,30 +1,14 @@
-// scanner.js — V8 Self-Improving AI Quant Bot with GitHub State Persistence
-const fs = require('fs');
-const path = require('path');
-
+// scanner.js — V8.1 Hardened Cloud AI Quant Scanner (Walk-Forward + Volume + Crash-Proof Telegram)
 const COINS = ['BTC', 'ETH', 'SOL', 'BNB', 'XRP', 'DOGE', 'ADA', 'AVAX', 'SUI', 'LINK', 'TRX', 'TON', 'NEAR', 'PEPE', 'SHIB'];
-const TRADE_MODE = 'FUTURES';
+const TRADE_MODE = 'FUTURES'; // 'FUTURES' or 'SPOT'
 const LEVERAGE = 3;
 
 const BULLISH_WORDS = ['surge', 'surges', 'rally', 'rallies', 'bull', 'bullish', 'breakout', 'adopt', 'adoption', 'partnership', 'upgrade', 'etf', 'inflow', 'inflows', 'record', 'high', 'soar', 'soars', 'gain', 'gains', 'launch', 'approve', 'approved', 'institutional', 'accumulate'];
 const BEARISH_WORDS = ['hack', 'hacked', 'exploit', 'crash', 'crashes', 'plunge', 'plunges', 'bear', 'bearish', 'ban', 'lawsuit', 'sec', 'outflow', 'outflows', 'dump', 'dumps', 'drop', 'drops', 'slump', 'outage', 'halt', 'delist', 'liquidate', 'liquidation', 'fraud', 'scam', 'selloff'];
 
-const STATE_FILE = path.join(__dirname, 'state.json');
-
-// Load or initialize agent memory state
-function loadState() {
-  try {
-    if (fs.existsSync(STATE_FILE)) {
-      return JSON.parse(fs.readFileSync(STATE_FILE, 'utf8'));
-    }
-  } catch (e) {}
-  return { optimizedParams: {}, lastRun: Date.now() };
-}
-
-function saveState(state) {
-  try {
-    fs.writeFileSync(STATE_FILE, JSON.stringify(state, null, 2), 'utf8');
-  } catch (e) {}
+// Strips special characters so Telegram Markdown never crashes on weird news headlines
+function cleanText(str) {
+  return String(str || '').replace(/[_*[\]()~`>#+=|{}.!-]/g, ' ').replace(/\s+/g, ' ').trim();
 }
 
 function computeRSIArray(closes, period = 14) {
@@ -75,26 +59,59 @@ function computeATRPercent(candles, period = 14) {
 async function fetchCandles(symbol) {
   const pair = symbol + 'USDT';
   const urls = [
-    `https://data-api.binance.vision/api/v3/klines?symbol=${pair}&interval=1h&limit=150`,
-    `https://api.binance.com/api/v3/klines?symbol=${pair}&interval=1h&limit=150`
+    `https://data-api.binance.vision/api/v3/klines?symbol=${pair}&interval=1h&limit=250`,
+    `https://api.binance.com/api/v3/klines?symbol=${pair}&interval=1h&limit=250`
   ];
   for (const url of urls) {
     try {
       const res = await fetch(url);
       if (!res.ok) continue;
       const json = await res.json();
-      if (Array.isArray(json) && json.length > 55) {
+      if (Array.isArray(json) && json.length > 60) {
         return json.map(c => ({
-          time: c[0], open: parseFloat(c[1]), high: parseFloat(c[2]), low: parseFloat(c[3]), close: parseFloat(c[4])
+          time: c[0], open: parseFloat(c[1]), high: parseFloat(c[2]), low: parseFloat(c[3]), close: parseFloat(c[4]), volume: parseFloat(c[5])
         }));
       }
     } catch (e) {}
   }
-  const ccRes = await fetch(`https://min-api.cryptocompare.com/data/v2/histohour?fsym=${symbol}&tsym=USD&limit=150`);
+  const ccRes = await fetch(`https://min-api.cryptocompare.com/data/v2/histohour?fsym=${symbol}&tsym=USD&limit=250`);
   const ccJson = await ccRes.json();
   return ccJson.Data.Data.map(c => ({
-    time: c.time * 1000, open: parseFloat(c.open), high: parseFloat(c.high), low: parseFloat(c.low), close: parseFloat(c.close)
+    time: c.time * 1000, open: parseFloat(c.open), high: parseFloat(c.high), low: parseFloat(c.low), close: parseFloat(c.close), volume: parseFloat(c.volumeto || 1)
   }));
+}
+
+// Walk-Forward Mini-Optimizer: Tests RSI thresholds on the coin's past 250 hours before checking live candle
+function optimizeRsiThresholds(candles, closes, rsis, ema50s, tpPct, slPct) {
+  const buyCandidates = [30, 33, 36, 39];
+  const sellCandidates = [61, 64, 67, 70];
+  let best = { score: -999, buyRsi: 35, sellRsi: 65 };
+
+  for (const b of buyCandidates) {
+    for (const s of sellCandidates) {
+      let cash = 1000, pos = null, entry = 0, trades = 0;
+      for (let i = 52; i < candles.length - 2; i++) {
+        const price = closes[i], high = candles[i].high, low = candles[i].low;
+        const rNow = rsis[i], rPrev = rsis[i - 1];
+        if (!rNow || !rPrev) continue;
+
+        if (!pos) {
+          if (rPrev <= b && rNow > rPrev && price >= closes[i - 1]) { pos = 'L'; entry = price; }
+          else if (TRADE_MODE === 'FUTURES' && rPrev >= s && rNow < rPrev && price <= closes[i - 1]) { pos = 'S'; entry = price; }
+        } else if (pos === 'L') {
+          if (low <= entry * (1 - slPct / 100)) { cash *= (1 - (slPct * LEVERAGE) / 100); pos = null; trades++; }
+          else if (high >= entry * (1 + tpPct / 100)) { cash *= (1 + (tpPct * LEVERAGE) / 100); pos = null; trades++; }
+        } else if (pos === 'S') {
+          if (high >= entry * (1 + slPct / 100)) { cash *= (1 - (slPct * LEVERAGE) / 100); pos = null; trades++; }
+          else if (low <= entry * (1 - tpPct / 100)) { cash *= (1 + (tpPct * LEVERAGE) / 100); pos = null; trades++; }
+        }
+      }
+      if (trades >= 1 && cash > best.score) {
+        best = { score: cash, buyRsi: b, sellRsi: s };
+      }
+    }
+  }
+  return best;
 }
 
 async function fetchNewsSentiment(symbol) {
@@ -109,7 +126,7 @@ async function fetchNewsSentiment(symbol) {
       BEARISH_WORDS.forEach(w => { if (txt.includes(w)) bear++; });
     });
     const score = Math.max(-100, Math.min(100, (bull - bear) * 14));
-    const headline = articles.length > 0 ? articles[0].title : 'No major breaking headline';
+    const headline = articles.length > 0 ? cleanText(articles[0].title) : 'No major breaking headline';
     return { score, headline };
   } catch (e) {
     return { score: 0, headline: 'News feed offline' };
@@ -136,7 +153,6 @@ async function runScanner() {
     process.exit(1);
   }
 
-  let state = loadState();
   const inrRate = await getInrRate();
   const fmtPrice = (usd) => `$${usd < 1 ? usd.toFixed(5) : usd.toFixed(2)} (₹${(usd * inrRate).toLocaleString('en-IN', { maximumFractionDigits: 2 })})`;
 
@@ -148,34 +164,28 @@ async function runScanner() {
       const candles = await fetchCandles(coin);
       const closes = candles.map(c => c.close);
       const livePrice = closes[closes.length - 1];
-      const idx = closes.length - 2;
+      const idx = closes.length - 2; // Confirmed closed candle
 
       const rsis = computeRSIArray(closes, 14);
       const ema50s = computeEMAArray(closes, 50);
       const atrPct = computeATRPercent(candles, 14);
 
+      const tpPct = Number(Math.max(3.5, Math.min(8.5, atrPct * 2.4)).toFixed(1));
+      const slPct = Number(Math.max(2.5, Math.min(5.5, atrPct * 1.5)).toFixed(1));
+
+      // Walk-forward self-tuning per coin
+      const tuned = optimizeRsiThresholds(candles, closes, rsis, ema50s, tpPct, slPct);
+      const buyThreshold = tuned.buyRsi;
+      const sellThreshold = tuned.sellRsi;
+
       const rsiNow = rsis[idx], rsiPrev = rsis[idx - 1], rsiPrev2 = rsis[idx - 2];
       const ema50 = ema50s[idx];
 
-      // Self-optimizing dynamic parameters based on volatility & saved state memory
-      let tpPct = Number(Math.max(3.5, Math.min(8.5, atrPct * 2.4)).toFixed(1));
-      let slPct = Number(Math.max(2.5, Math.min(5.5, atrPct * 1.5)).toFixed(1));
-      let buyThreshold = 35;
-      let sellThreshold = 65;
-
-      // If state memory exists for this coin, adapt slightly based on past volatility adjustments
-      if (state.optimizedParams[coin]) {
-        buyThreshold = state.optimizedParams[coin].buyRsi || 35;
-        sellThreshold = state.optimizedParams[coin].sellRsi || 65;
-      } else {
-        state.optimizedParams[coin] = { buyRsi: 35, sellRsi: 65, adaptiveTp: tpPct };
-      }
-
-      const dippedOversold = (rsiPrev <= buyThreshold || rsiPrev2 <= buyThreshold || rsiNow <= 32);
+      const dippedOversold = (rsiPrev <= buyThreshold || rsiPrev2 <= buyThreshold || rsiNow <= buyThreshold - 3);
       const hookedUp = rsiNow > rsiPrev && closes[idx] >= closes[idx - 1];
       const notFreefall = !ema50 || (closes[idx] >= ema50 * 0.94 || rsiPrev < 25);
 
-      const peakedOverbought = (rsiPrev >= sellThreshold || rsiPrev2 >= sellThreshold || rsiNow >= 68);
+      const peakedOverbought = (rsiPrev >= sellThreshold || rsiPrev2 >= sellThreshold || rsiNow >= sellThreshold + 3);
       const hookedDown = rsiNow < rsiPrev && closes[idx] <= closes[idx - 1];
       const safeToShort = !ema50 || TRADE_MODE === 'SPOT' || (closes[idx] <= ema50 * 1.05 || rsiPrev >= 75);
 
@@ -183,7 +193,7 @@ async function runScanner() {
       if (dippedOversold && hookedUp && notFreefall && rsiNow < 48) signal = 'BUY';
       else if (peakedOverbought && hookedDown && safeToShort && rsiNow > 52) signal = 'SELL';
 
-      closestCoins.push({ coin, rsiNow, livePrice });
+      closestCoins.push({ coin, rsiNow, livePrice, buyThreshold, sellThreshold });
 
       if (signal !== 'NONE') {
         const news = await fetchNewsSentiment(coin);
@@ -199,47 +209,45 @@ async function runScanner() {
 
         triggered.push({
           coin, label, livePrice, tpPrice, slPrice, tpPct, slPct, isShort,
-          rsiPrev, rsiNow, ema50, newsScore: news.score, headline: news.headline
+          rsiPrev, rsiNow, buyThreshold, sellThreshold, newsScore: news.score, headline: news.headline
         });
       }
     } catch (err) {}
   }
 
-  state.lastRun = Date.now();
-  saveState(state);
-
   if (triggered.length > 0) {
-    let msg = `🤖 *V8 SELF-IMPROVING AI SCANNER* 🤖\nFound *${triggered.length}* confirmed setup(s):\n\n`;
+    let msg = `🤖 *V8.1 WALK-FORWARD AI ALERT* 🤖\nFound *${triggered.length}* confirmed setup(s):\n\n`;
     triggered.forEach(t => {
       msg += `🔥 *${t.coin}/USDT* — ${t.label}\n` +
              `💰 *Entry:* ${fmtPrice(t.livePrice)}\n` +
              `🎯 *Take-Profit:* ${fmtPrice(t.tpPrice)} (${t.isShort ? '-' : '+'}${t.tpPct}%)\n` +
              `🛑 *Stop-Loss:* ${fmtPrice(t.slPrice)} (${t.isShort ? '+' : '-'}${t.slPct}%)\n` +
-             `📊 *RSI Hook:* ${t.rsiPrev.toFixed(1)} → *${t.rsiNow.toFixed(1)}* | *News:* ${t.newsScore}\n` +
-             `📰 _"${t.headline}"_\n\n`;
+             `📊 *RSI Hook:* ${t.rsiPrev.toFixed(1)} → *${t.rsiNow.toFixed(1)}* (Tuned Zone: ${t.buyThreshold}/${t.sellThreshold})\n` +
+             `📰 *News (${t.newsScore}):* _"${t.headline}"_\n\n`;
     });
     await sendTelegram(token, chatId, msg);
   } else if (isManualRun) {
     closestCoins.sort((a, b) => a.rsiNow - b.rsiNow);
-    const top3Oversold = closestCoins.slice(0, 3).map(c => `• *${c.coin}:* RSI ${c.rsiNow.toFixed(1)} (${fmtPrice(c.livePrice)})`).join('\n');
-    const top2Overbought = closestCoins.slice(-2).reverse().map(c => `• *${c.coin}:* RSI ${c.rsiNow.toFixed(1)} (${fmtPrice(c.livePrice)})`).join('\n');
+    const top3Oversold = closestCoins.slice(0, 3).map(c => `• *${c.coin}:* RSI ${c.rsiNow.toFixed(1)} (Buy Zone <= ${c.buyThreshold}) — ${fmtPrice(c.livePrice)}`).join('\n');
+    const top2Overbought = closestCoins.slice(-2).reverse().map(c => `• *${c.coin}:* RSI ${c.rsiNow.toFixed(1)} (Sell Zone >= ${c.sellThreshold}) — ${fmtPrice(c.livePrice)}`).join('\n');
 
     const testMsg =
-      `✅ *V8 State-Aware AI Bot is LIVE!* (Memory Active)\n\n` +
-      `Scanned all 15 top-volume coins. *0 coins* have an immediate confirmed entry.\n\n` +
+      `✅ *V8.1 Walk-Forward AI Bot is LIVE!*\n\n` +
+      `Scanned & auto-tuned all 15 coins across 250 hours of history. *0 coins* have an immediate confirmed entry this hour.\n\n` +
       `📉 *Closest to BUY / LONG:*\n${top3Oversold}\n\n` +
-      `📈 *Closest to SELL / SHORT:*\n${top2Overbought}\n\n` +
-      `🧠 _State memory initialized successfully. Bot will remember parameter adjustments across hourly runs._`;
+      `📈 *Closest to SELL / SHORT:*\n${top2Overbought}`;
     await sendTelegram(token, chatId, testMsg);
   }
 }
 
 async function sendTelegram(token, chatId, text) {
-  await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+  const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'Markdown' })
   });
+  const data = await res.json();
+  if (!data.ok) console.error('Telegram API Error:', data.description);
 }
 
 runScanner();
