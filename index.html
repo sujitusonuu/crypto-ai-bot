@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Crypto AI Quant Terminal V7 — Self-Learning Agent & Live News</title>
+  <title>Crypto AI Quant Terminal V7.2 — Multi-Timeframe & AI News Shield</title>
   <style>
     * { box-sizing: border-box; }
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #070b14; color: #f8fafc; margin: 0; padding: 16px; }
@@ -96,11 +96,12 @@
       </select>
       <input type="text" id="customCoin" placeholder="e.g. WIF" style="display:none; width:80px;" onchange="loadData()">
 
-      <label style="margin-left:6px;">Engine:</label>
-      <select id="engineSelect" onchange="updateAllViews()">
-        <option value="V7_AI" selected>🤖 V7 AI Agent (Quant + News Shield)</option>
-        <option value="V6_PRO">🧠 V6 Pro Quant (Trend + RSI Hook)</option>
-        <option value="V5_BASIC">⚡ V5 Basic (Raw RSI)</option>
+      <label style="margin-left:6px;">Timeframe:</label>
+      <select id="timeframeSelect" onchange="loadData()">
+        <option value="1h">1 Hour (Fast)</option>
+        <option value="4h" selected>4 Hours (Balanced)</option>
+        <option value="8h">8 Hours (Smooth)</option>
+        <option value="1d">1 Day (Macro)</option>
       </select>
 
       <label style="margin-left:6px;">Mode:</label>
@@ -117,7 +118,6 @@
           <option value="3" selected>3x (Safe)</option>
           <option value="5">5x</option>
           <option value="10">10x</option>
-          <option value="20">20x</option>
         </select>
       </div>
     </div>
@@ -138,7 +138,7 @@
     <div class="scanner-header">
       <div>
         <h2 style="margin:0; color:#38bdf8;">📡 Top-Volume Crypto Market Scanner (15 Major Coins)</h2>
-        <div class="subtitle" style="margin:4px 0 0 0;">Scans all 15 top-volume coins using your active strategy and blasts confirmed setups to Telegram.</div>
+        <div class="subtitle" style="margin:4px 0 0 0;">Scans all 15 top-volume coins on your selected timeframe using AI Quant rules.</div>
       </div>
       <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
         <label style="font-size:0.78rem; color:#cbd5e1; display:flex; align-items:center; gap:5px;">
@@ -155,8 +155,8 @@
             <th>Coin</th>
             <th>Signal Status</th>
             <th>Live Price</th>
-            <th>1H RSI (Prev &rarr; Now)</th>
-            <th>50H EMA Trend</th>
+            <th>RSI Hook (Prev &rarr; Now)</th>
+            <th>50-Period EMA Trend</th>
             <th>Recommended TP</th>
             <th>Recommended SL</th>
             <th>Action</th>
@@ -168,7 +168,7 @@
   </div>
 
   <div class="container">
-    <!-- LEFT COLUMN: LIVE SIGNAL + AI NEWS BRAIN + TELEGRAM -->
+    <!-- LEFT COLUMN: LIVE SIGNAL + AI NEWS BRAIN -->
     <div>
       <div class="card">
         <h1 id="liveTitle">Live SOL Signal</h1>
@@ -180,8 +180,8 @@
         <div id="reason" class="reason">Checking candles & news sentiment...</div>
 
         <div class="metrics">
-          <div>1H RSI (Prev &rarr; Now)<span id="rsi" class="metric-val">--</span></div>
-          <div>50-Hour Trend EMA<span id="ema50" class="metric-val">--</span></div>
+          <div>RSI Hook (Prev &rarr; Now)<span id="rsi" class="metric-val">--</span></div>
+          <div>50-Period Trend EMA<span id="ema50" class="metric-val">--</span></div>
           <div>News Sentiment Score<span id="newsScore" class="metric-val">--</span></div>
           <div>Volatility (ATR %)<span id="atrPct" class="metric-val">--</span></div>
           <div>Recommended TP<span id="targetTp" class="metric-val pos">--</span></div>
@@ -191,23 +191,23 @@
         <button class="btn" onclick="loadData()">🔄 Refresh Price & News Now</button>
       </div>
 
-      <!-- NEW V7: SELF-LEARNING AI AGENT & NEWS SENTIMENT SHIELD -->
+      <!-- AUTONOMOUS AI AGENT & NEWS SHIELD -->
       <div class="card ai-card">
         <h3>🤖 Autonomous AI Agent & News Shield</h3>
-        <div class="subtitle">Monitors breaking crypto news & continuously self-optimizes strategy parameters every hour.</div>
+        <div class="subtitle">Monitors breaking crypto news sentiment and auto-tunes strategy parameters.</div>
 
         <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px; font-size:0.79rem; color:#e2e8f0;">
           <input type="checkbox" id="selfLearnToggle" checked onchange="saveAiConfig()" style="width:auto;">
-          <label for="selfLearnToggle"><strong>Continuous Self-Learning:</strong> Auto-tune RSI & TP/SL on every new candle</label>
+          <label for="selfLearnToggle"><strong>Continuous Self-Learning:</strong> Auto-tune RSI & TP/SL on load</label>
         </div>
         <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px; font-size:0.79rem; color:#e2e8f0;">
           <input type="checkbox" id="newsVetoToggle" checked onchange="updateAllViews()" style="width:auto;">
-          <label for="newsVetoToggle"><strong>News Sentiment Shield:</strong> Block Longs on Bearish News / Block Shorts on Bullish News</label>
+          <label for="newsVetoToggle"><strong>News Sentiment Shield:</strong> Block unsafe counter-news trades</label>
         </div>
 
         <div class="control-group" style="margin-bottom:6px;">
-          <label>Optional: Gemini API Key (for Deep AI Market Analysis)</label>
-          <input type="password" id="geminiKey" placeholder="AIzaSy... (Optional from Google AI Studio)" onchange="saveAiConfig()">
+          <label>Optional: Gemini API Key (Deep AI Analysis)</label>
+          <input type="password" id="geminiKey" placeholder="AIzaSy..." onchange="saveAiConfig()">
         </div>
         <button class="btn-ai" onclick="runDeepAiAnalysis()">🧠 Ask AI Agent to Analyze Chart + Live News</button>
         <div id="aiVerdictBox" class="ai-output"></div>
@@ -215,32 +215,13 @@
         <h3 style="margin-top:14px; font-size:0.92rem;">📰 Live Coin News & Sentiment Feed</h3>
         <div class="news-list" id="newsFeed">Loading latest crypto headlines...</div>
       </div>
-
-      <!-- TELEGRAM BOT INTEGRATION CARD -->
-      <div class="card">
-        <h3>📲 Telegram Signal Bot Setup</h3>
-        <div class="control-group" style="margin-bottom:8px;">
-          <label>Telegram Bot Token (from @BotFather)</label>
-          <input type="password" id="tgToken" placeholder="123456789:ABCdefGHIjkl..." onchange="saveAiConfig()">
-        </div>
-        <div class="control-group" style="margin-bottom:8px;">
-          <label>Your Telegram Chat ID (from @userinfobot)</label>
-          <input type="text" id="tgChatId" placeholder="e.g. 987654321" onchange="saveAiConfig()">
-        </div>
-        <div style="display:flex; align-items:center; gap:8px; margin: 8px 0; font-size:0.78rem; color:#cbd5e1;">
-          <input type="checkbox" id="tgAuto" checked onchange="saveAiConfig()" style="width:auto;">
-          <label for="tgAuto">Auto-send Telegram alert when AI Signal triggers</label>
-        </div>
-        <button class="btn btn-tg" onclick="sendTelegramSignal(true)">✈️ Send Active Signal + News Report to Telegram</button>
-        <div id="tgStatus" class="tg-status"></div>
-      </div>
     </div>
 
     <!-- RIGHT COLUMN: VISUAL CHART + SELF-OPTIMIZING BACKTESTER -->
     <div>
       <div class="card">
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; margin-bottom:6px;">
-          <h2>📈 Price, 20-SMA, 50-EMA & RSI Chart (Last 120 Hours)</h2>
+          <h2>📈 Price, 20-SMA, 50-EMA & RSI Chart</h2>
           <div class="legend">
             <span><i class="dot" style="background:#38bdf8"></i> Price</span>
             <span><i class="dot" style="background:#f59e0b"></i> 20-SMA</span>
@@ -315,40 +296,33 @@
 
   <script>
     const TOP_VOLUME_COINS = ['BTC', 'ETH', 'SOL', 'BNB', 'XRP', 'DOGE', 'ADA', 'AVAX', 'SUI', 'LINK', 'TRX', 'TON', 'NEAR', 'PEPE', 'SHIB'];
-    const BULLISH_WORDS = ['surge', 'surges', 'rally', 'rallies', 'bull', 'bullish', 'breakout', 'adopt', 'adoption', 'partnership', 'upgrade', 'etf', 'inflow', 'inflows', 'record', 'high', 'soar', 'soars', 'gain', 'gains', 'launch', 'launches', 'approve', 'approved', 'institutional', 'accumulate', 'buy'];
-    const BEARISH_WORDS = ['hack', 'hacked', 'exploit', 'crash', 'crashes', 'plunge', 'plunges', 'bear', 'bearish', 'ban', 'lawsuit', 'sec', 'outflow', 'outflows', 'dump', 'dumps', 'drop', 'drops', 'slump', 'outage', 'halt', 'delist', 'liquidate', 'liquidation', 'fraud', 'scam', 'investigation', 'selloff'];
+    const BULLISH_WORDS = ['surge', 'surges', 'rally', 'rallies', 'bull', 'bullish', 'breakout', 'adopt', 'adoption', 'partnership', 'upgrade', 'etf', 'inflow', 'inflows', 'record', 'high', 'soar', 'soars', 'gain', 'gains', 'launch', 'approve', 'approved', 'institutional', 'accumulate'];
+    const BEARISH_WORDS = ['hack', 'hacked', 'exploit', 'crash', 'crashes', 'plunge', 'plunges', 'bear', 'bearish', 'ban', 'lawsuit', 'sec', 'outflow', 'outflows', 'dump', 'dumps', 'drop', 'drops', 'slump', 'outage', 'halt', 'delist', 'liquidate', 'liquidation', 'fraud', 'scam', 'selloff'];
 
     let historicalCandles = [];
-    let rsiCache = [];
-    let smaCache = [];
-    let ema50Cache = [];
+    let rsiCache = [], smaCache = [], ema50Cache = [];
     let currentNews = [];
-    let currentSentiment = { score: 0, label: "Neutral (0)", bullCount: 0, bearCount: 0 };
+    let currentSentiment = { score: 0, label: "Neutral (0)" };
     let currentAtrPct = 2.5;
-    let lastAlertedCandleTime = 0;
-    let lastLearnedCandleTime = 0;
     let currentRecommendation = null;
     let autoScanInterval = null;
 
     window.addEventListener('DOMContentLoaded', () => {
-      document.getElementById('tgToken').value = localStorage.getItem('tg_token') || '';
-      document.getElementById('tgChatId').value = localStorage.getItem('tg_chat_id') || '';
       document.getElementById('geminiKey').value = localStorage.getItem('gemini_key') || '';
-      const autoSaved = localStorage.getItem('tg_auto');
-      if (autoSaved !== null) document.getElementById('tgAuto').checked = autoSaved === 'true';
     });
 
     function saveAiConfig() {
-      localStorage.setItem('tg_token', document.getElementById('tgToken').value.trim());
-      localStorage.setItem('tg_chat_id', document.getElementById('tgChatId').value.trim());
       localStorage.setItem('gemini_key', document.getElementById('geminiKey').value.trim());
-      localStorage.setItem('tg_auto', document.getElementById('tgAuto').checked);
     }
 
     function getSelectedSymbol() {
       const sel = document.getElementById('coinSelect').value;
       if (sel === 'CUSTOM') return document.getElementById('customCoin').value.trim().toUpperCase() || 'SOL';
       return sel;
+    }
+
+    function getTimeframe() {
+      return document.getElementById('timeframeSelect').value;
     }
 
     function getCurrencyInfo() {
@@ -375,15 +349,13 @@
       document.getElementById('customCoin').style.display = sel === 'CUSTOM' ? 'inline-block' : 'none';
       document.getElementById('optBanner').style.display = 'none';
       document.getElementById('aiVerdictBox').style.display = 'none';
-      lastLearnedCandleTime = 0;
-      if (sel !== 'CUSTOM') loadData();
+      loadData();
     }
 
     function selectCoinFromScanner(symbol) {
       document.getElementById('coinSelect').value = symbol;
       document.getElementById('customCoin').style.display = 'none';
       document.getElementById('optBanner').style.display = 'none';
-      lastLearnedCandleTime = 0;
       loadData();
     }
 
@@ -457,14 +429,12 @@
       return trSum / period;
     }
 
-    // Fetch Live Crypto News & Score Sentiment Automatically
     async function fetchCoinNews(symbol) {
       const feedEl = document.getElementById('newsFeed');
       try {
-        const url = `https://min-api.cryptocompare.com/data/v2/news/?categories=${symbol},Market&excludeCategories=Sponsored`;
-        const res = await fetch(url);
+        const res = await fetch(`https://min-api.cryptocompare.com/data/v2/news/?categories=${symbol},Market&excludeCategories=Sponsored`);
         const json = await res.json();
-        const articles = (json.Data || []).slice(0, 8);
+        const articles = (json.Data || []).slice(0, 6);
         currentNews = articles;
 
         let bull = 0, bear = 0;
@@ -479,77 +449,60 @@
         if (rawScore >= 25) label = `Bullish (+${rawScore})`;
         else if (rawScore <= -25) label = `Bearish (${rawScore})`;
 
-        currentSentiment = { score: rawScore, label, bullCount: bull, bearCount: bear };
-
-        if (articles.length === 0) {
-          feedEl.innerHTML = "No major breaking headlines in the last few hours.";
-        } else {
-          feedEl.innerHTML = articles.map(a => {
-            const timeAgo = Math.round((Date.now() / 1000 - a.published_on) / 60);
-            const timeStr = timeAgo < 60 ? `${timeAgo}m ago` : `${Math.round(timeAgo / 60)}h ago`;
-            return `<div class="news-item">
-              <a href="${a.url}" target="_blank" rel="noopener">${a.title}</a>
-              <div style="font-size:0.7rem; color:#64748b; margin-top:2px;">${a.source_info ? a.source_info.name : 'CryptoNews'} • ${timeStr}</div>
-            </div>`;
-          }).join('');
-        }
+        currentSentiment = { score: rawScore, label };
+        feedEl.innerHTML = articles.length === 0 ? "No major breaking headlines." : articles.map(a => `
+          <div class="news-item">
+            <a href="${a.url}" target="_blank" rel="noopener">${a.title}</a>
+            <div style="font-size:0.7rem; color:#64748b; margin-top:2px;">${a.source_info ? a.source_info.name : 'CryptoNews'}</div>
+          </div>
+        `).join('');
       } catch (e) {
-        currentSentiment = { score: 0, label: "Neutral (Offline)", bullCount: 0, bearCount: 0 };
-        feedEl.innerHTML = "News server unreachable—operating on pure Quant mode.";
+        currentSentiment = { score: 0, label: "Neutral (Offline)" };
+        feedEl.innerHTML = "News feed offline.";
       }
     }
 
-    async function fetchCandles(symbol, limit = 500) {
+    async function fetchCandles(symbol) {
       const pair = symbol + "USDT";
-      const endpoints = [
-        { name: "Binance Vision", url: `https://data-api.binance.vision/api/v3/klines?symbol=${pair}&interval=1h&limit=${limit}`, type: "binance" },
-        { name: "Binance API", url: `https://api.binance.com/api/v3/klines?symbol=${pair}&interval=1h&limit=${limit}`, type: "binance" },
-        { name: "CryptoCompare", url: `https://min-api.cryptocompare.com/data/v2/histohour?fsym=${symbol}&tsym=USD&limit=${limit}`, type: "cc" }
+      const tf = getTimeframe();
+      const urls = [
+        `https://data-api.binance.vision/api/v3/klines?symbol=${pair}&interval=${tf}&limit=300`,
+        `https://api.binance.com/api/v3/klines?symbol=${pair}&interval=${tf}&limit=300`
       ];
-      for (const ep of endpoints) {
+      for (const url of urls) {
         try {
-          const res = await fetch(ep.url);
+          const res = await fetch(url);
           if (!res.ok) continue;
           const json = await res.json();
-          if (ep.type === "binance" && Array.isArray(json) && json.length > 55) {
+          if (Array.isArray(json) && json.length > 55) {
             return {
-              source: ep.name,
+              source: 'Binance',
               candles: json.map(c => ({ time: c[0], open: parseFloat(c[1]), high: parseFloat(c[2]), low: parseFloat(c[3]), close: parseFloat(c[4]) }))
             };
-          } else if (ep.type === "cc" && json.Data && json.Data.Data && json.Data.Data.length > 55) {
-            return {
-              source: ep.name,
-              candles: json.Data.Data.map(c => ({ time: c.time * 1000, open: parseFloat(c.open), high: parseFloat(c.high), low: parseFloat(c.low), close: parseFloat(c.close) }))
-            };
           }
-        } catch (e) { continue; }
+        } catch (e) {}
       }
-      throw new Error("Could not load data for " + symbol);
+      const ccInterval = tf === '1d' ? 'histoday' : 'histohour';
+      const ccRes = await fetch(`https://min-api.cryptocompare.com/data/v2/${ccInterval}?fsym=${symbol}&tsym=USD&limit=300`);
+      const ccJson = await ccRes.json();
+      return {
+        source: 'CryptoCompare',
+        candles: ccJson.Data.Data.map(c => ({ time: c.time * 1000, open: parseFloat(c.open), high: parseFloat(c.high), low: parseFloat(c.low), close: parseFloat(c.close) }))
+      };
     }
 
-    function evaluateCandleSignal(idx, closes, rsiArr, ema50Arr, buyThreshold, sellThreshold, engine, mode) {
+    function evaluateCandleSignal(idx, closes, rsiArr, ema50Arr, buyThreshold, sellThreshold, mode) {
       const price = closes[idx];
-      const rsiNow = rsiArr[idx];
-      const rsiPrev = rsiArr[idx - 1];
-      const rsiPrev2 = rsiArr[idx - 2];
-      const ema50 = ema50Arr[idx];
-
+      const rsiNow = rsiArr[idx], rsiPrev = rsiArr[idx - 1], ema50 = ema50Arr[idx];
       if (rsiNow === null || rsiPrev === null) return "NONE";
 
-      if (engine === "V5_BASIC") {
-        if (rsiNow <= buyThreshold) return "BUY";
-        if (rsiNow >= sellThreshold) return "SELL";
-        return "NONE";
-      }
-
-      // V6 & V7 Quant Core: Oversold/Overbought + Reversal Hook + 50 EMA Trend Filter
-      const dippedOversold = (rsiPrev <= buyThreshold || (rsiPrev2 !== null && rsiPrev2 <= buyThreshold) || rsiNow <= buyThreshold - 3);
+      const dippedOversold = rsiPrev <= buyThreshold || rsiNow <= buyThreshold - 3;
       const hookedUp = rsiNow > rsiPrev && closes[idx] >= closes[idx - 1];
       const notFreefall = !ema50 || (price >= ema50 * 0.94 || rsiPrev < 25);
 
       if (dippedOversold && hookedUp && notFreefall && rsiNow < 48) return "BUY";
 
-      const peakedOverbought = (rsiPrev >= sellThreshold || (rsiPrev2 !== null && rsiPrev2 >= sellThreshold) || rsiNow >= sellThreshold + 4);
+      const peakedOverbought = rsiPrev >= sellThreshold || rsiNow >= sellThreshold + 3;
       const hookedDown = rsiNow < rsiPrev && closes[idx] <= closes[idx - 1];
       const safeToShort = !ema50 || mode === "SPOT" || (price <= ema50 * 1.05 || rsiPrev >= 75);
 
@@ -561,13 +514,11 @@
     async function loadData() {
       const symbol = getSelectedSymbol();
       const mode = document.getElementById('tradeMode').value;
-      document.getElementById('liveTitle').innerText = `Live ${symbol} (${mode === 'FUTURES' ? 'Futures' : 'Spot'})`;
+      const tf = getTimeframe();
+      document.getElementById('liveTitle').innerText = `Live ${symbol} (${tf.toUpperCase()} | ${mode})`;
       try {
-        const [candleRes] = await Promise.all([
-          fetchCandles(symbol, 500),
-          fetchCoinNews(symbol)
-        ]);
-        document.getElementById('dataSource').innerText = `Live OHLC (${symbol}/USDT) via ${candleRes.source}`;
+        const [candleRes] = await Promise.all([fetchCandles(symbol), fetchCoinNews(symbol)]);
+        document.getElementById('dataSource').innerText = `Live OHLC via ${candleRes.source} (${tf})`;
         historicalCandles = candleRes.candles;
         const closes = historicalCandles.map(c => c.close);
         rsiCache = computeRSIArray(closes, 14);
@@ -575,16 +526,13 @@
         ema50Cache = computeEMAArray(closes, 50);
         currentAtrPct = computeATRPercent(historicalCandles, 14);
 
-        // Continuous Self-Learning Loop: Auto-optimize whenever a new hourly candle closes or coin changes
-        const latestClosedTime = historicalCandles[historicalCandles.length - 2].time;
-        if (document.getElementById('selfLearnToggle').checked && lastLearnedCandleTime !== latestClosedTime) {
-          lastLearnedCandleTime = latestClosedTime;
+        if (document.getElementById('selfLearnToggle').checked) {
           autoOptimize(false);
         } else {
           updateAllViews();
         }
       } catch (err) {
-        document.getElementById('reason').innerText = `Could not load "${symbol}". Check spelling or connection.`;
+        document.getElementById('reason').innerText = `Could not load "${symbol}". Check connection.`;
       }
     }
 
@@ -597,15 +545,12 @@
 
     function updateLivePanel() {
       const symbol = getSelectedSymbol();
-      const engine = document.getElementById('engineSelect').value;
       const mode = document.getElementById('tradeMode').value;
       const lev = mode === 'FUTURES' ? (parseFloat(document.getElementById('leverage').value) || 1) : 1;
       const closes = historicalCandles.map(c => c.close);
       const livePriceUsd = closes[closes.length - 1];
       const lastClosedIdx = closes.length - 2;
-      const currentRsi = rsiCache[lastClosedIdx];
-      const prevRsi = rsiCache[lastClosedIdx - 1];
-      const currentEma50Usd = ema50Cache[lastClosedIdx];
+      const currentRsi = rsiCache[lastClosedIdx], prevRsi = rsiCache[lastClosedIdx - 1], currentEma50Usd = ema50Cache[lastClosedIdx];
 
       const buyThreshold = parseFloat(document.getElementById('buyRsi').value) || 35;
       const sellThreshold = parseFloat(document.getElementById('sellRsi').value) || 65;
@@ -614,104 +559,74 @@
 
       const cur = getCurrencyInfo();
       document.getElementById('price').innerText = formatMoney(livePriceUsd);
-      document.getElementById('subPrice').innerText = cur.code === 'INR'
-        ? `USD Price: $${livePriceUsd < 1 ? livePriceUsd.toFixed(5) : livePriceUsd.toFixed(2)} | Engine: ${engine}`
-        : `INR Price: ₹${(livePriceUsd * (parseFloat(document.getElementById('inrRate').value) || 94.78)).toLocaleString('en-IN', {maximumFractionDigits: 2})}`;
+      document.getElementById('subPrice').innerText = `USD: $${livePriceUsd < 1 ? livePriceUsd.toFixed(5) : livePriceUsd.toFixed(2)}`;
 
       document.getElementById('rsi').innerText = `${prevRsi.toFixed(1)} → ${currentRsi.toFixed(1)}`;
-      document.getElementById('ema50').innerText = formatMoney(currentEma50Usd) + (livePriceUsd >= currentEma50Usd ? ' (▲)' : ' (▼)');
+      document.getElementById('ema50').innerText = formatMoney(currentEma50Usd);
 
       const scoreEl = document.getElementById('newsScore');
       scoreEl.innerText = currentSentiment.label;
       scoreEl.className = 'metric-val ' + (currentSentiment.score >= 25 ? 'pos' : (currentSentiment.score <= -25 ? 'neg' : 'neu'));
-      document.getElementById('atrPct').innerText = `${currentAtrPct.toFixed(2)}% / hr`;
+      document.getElementById('atrPct').innerText = `${currentAtrPct.toFixed(2)}%`;
 
-      let rawSig = evaluateCandleSignal(lastClosedIdx, closes, rsiCache, ema50Cache, buyThreshold, sellThreshold, engine, mode);
-      const newsVetoEnabled = document.getElementById('newsVetoToggle').checked && engine === 'V7_AI';
+      let rawSig = evaluateCandleSignal(lastClosedIdx, closes, rsiCache, ema50Cache, buyThreshold, sellThreshold, mode);
+      const newsVetoEnabled = document.getElementById('newsVetoToggle').checked;
 
       const signalEl = document.getElementById('signal');
       const reasonEl = document.getElementById('reason');
 
       let actionText = "WAIT / HOLD", direction = "NEUTRAL";
-      let tpPriceUsd = livePriceUsd * (1 + tpPct / 100);
-      let slPriceUsd = livePriceUsd * (1 - slPct / 100);
+      let tpPriceUsd = livePriceUsd * (1 + tpPct / 100), slPriceUsd = livePriceUsd * (1 - slPct / 100);
 
-      // Apply AI News Sentiment Shield Veto if enabled
       if (rawSig === "BUY" && newsVetoEnabled && currentSentiment.score <= -30) {
         signalEl.className = 'signal-box veto';
         signalEl.innerText = `🛡️ AI NEWS VETO (LONG BLOCKED)`;
-        reasonEl.innerText = `Chart showed an oversold bounce, but Live News Sentiment is heavily Bearish (${currentSentiment.score}). AI Shield blocked buying into bad news!`;
+        reasonEl.innerText = `Oversold bounce detected, but News Sentiment is Bearish (${currentSentiment.score}). AI Shield blocked trade!`;
       } else if (rawSig === "SELL" && mode === "FUTURES" && newsVetoEnabled && currentSentiment.score >= 30) {
         signalEl.className = 'signal-box veto';
         signalEl.innerText = `🛡️ AI NEWS VETO (SHORT BLOCKED)`;
-        reasonEl.innerText = `Chart showed overbought RSI, but Live News Sentiment is strongly Bullish (+${currentSentiment.score}). AI Shield blocked shorting a news-driven rally!`;
+        reasonEl.innerText = `Overbought RSI detected, but News Sentiment is Bullish (+${currentSentiment.score}). AI Shield blocked short!`;
       } else if (rawSig === "BUY") {
         direction = mode === 'FUTURES' ? `LONG (${lev}x)` : `SPOT BUY`;
-        actionText = mode === 'FUTURES' ? `🟢 AI CONFIRMED LONG (${lev}x)` : `🟢 AI CONFIRMED SPOT BUY`;
+        actionText = mode === 'FUTURES' ? `🟢 CONFIRMED LONG (${lev}x)` : `🟢 SPOT BUY`;
         signalEl.className = 'signal-box buy';
         signalEl.innerText = actionText;
-        reasonEl.innerText = `Confirmed Entry: RSI hooked up (${prevRsi.toFixed(1)} → ${currentRsi.toFixed(1)}) + News Sentiment (${currentSentiment.label}) is safe.`;
+        reasonEl.innerText = `RSI hooked up (${prevRsi.toFixed(1)} → ${currentRsi.toFixed(1)}) with trend support.`;
       } else if (rawSig === "SELL") {
         if (mode === 'FUTURES') {
           direction = `SHORT (${lev}x)`;
-          actionText = `🔴 AI CONFIRMED SHORT (${lev}x)`;
-          tpPriceUsd = livePriceUsd * (1 - tpPct / 100);
-          slPriceUsd = livePriceUsd * (1 + slPct / 100);
-          reasonEl.innerText = `Confirmed Short: Overbought hook (${prevRsi.toFixed(1)} → ${currentRsi.toFixed(1)}) + News Sentiment (${currentSentiment.label}) allows shorting.`;
+          actionText = `🔴 CONFIRMED SHORT (${lev}x)`;
+          tpPriceUsd = livePriceUsd * (1 - tpPct / 100); slPriceUsd = livePriceUsd * (1 + slPct / 100);
+          reasonEl.innerText = `Overbought exhaustion hook (${prevRsi.toFixed(1)} → ${currentRsi.toFixed(1)}). Target -${tpPct}% pullback.`;
         } else {
-          direction = `SPOT SELL`;
-          actionText = `🔴 SELL SPOT / TAKE PROFIT`;
-          reasonEl.innerText = `Confirmed Overbought Reversal (${prevRsi.toFixed(1)} → ${currentRsi.toFixed(1)}). Lock in Spot gains.`;
+          direction = `SPOT SELL`; actionText = `🔴 SELL SPOT / TAKE PROFIT`;
+          reasonEl.innerText = `Overbought Reversal (${prevRsi.toFixed(1)} → ${currentRsi.toFixed(1)}). Lock in gains.`;
         }
         signalEl.className = 'signal-box sell';
         signalEl.innerText = actionText;
       } else {
         signalEl.className = 'signal-box wait';
-        signalEl.innerText = `🟡 WAIT FOR AI CONFIRMATION`;
-        reasonEl.innerText = `RSI is ${currentRsi.toFixed(1)} | News: ${currentSentiment.label}. Waiting for RSI ≤ ${buyThreshold} (upward hook) or RSI ≥ ${sellThreshold} (downward hook).`;
+        signalEl.innerText = `🟡 WAIT / NO ENTRY`;
+        reasonEl.innerText = `RSI is ${currentRsi.toFixed(1)} | News: ${currentSentiment.label}. Waiting for reversal hook.`;
       }
 
       document.getElementById('targetTp').innerText = `${formatMoney(tpPriceUsd)} (${direction.includes('SHORT') ? '-' : '+'}${tpPct}%)`;
       document.getElementById('targetSl').innerText = `${formatMoney(slPriceUsd)} (${direction.includes('SHORT') ? '+' : '-'}${slPct}%)`;
 
-      currentRecommendation = {
-        symbol, mode, engine, lev, direction, actionText,
-        priceUsd: livePriceUsd, tpPriceUsd, slPriceUsd, tpPct, slPct,
-        rsi: currentRsi, prevRsi, ema50Usd: currentEma50Usd,
-        newsLabel: currentSentiment.label,
-        topHeadline: currentNews.length > 0 ? currentNews[0].title : 'No major breaking headline',
-        candleTime: historicalCandles[lastClosedIdx].time
-      };
-
-      const autoTg = document.getElementById('tgAuto').checked;
-      if (autoTg && direction !== "NEUTRAL" && lastAlertedCandleTime !== currentRecommendation.candleTime) {
-        lastAlertedCandleTime = currentRecommendation.candleTime;
-        sendTelegramSignal(false);
-      }
+      currentRecommendation = { symbol, mode, lev, direction, actionText, priceUsd: livePriceUsd, tpPriceUsd, slPriceUsd, tpPct, slPct };
     }
 
-    // Deep AI Analysis (Uses Gemini API if key provided, or built-in Expert Heuristic Agent if empty)
     async function runDeepAiAnalysis() {
       const box = document.getElementById('aiVerdictBox');
       box.style.display = 'block';
-      box.innerText = "🤖 AI Agent is analyzing 1-Hour candle structure, volatility, and breaking headlines...";
-
+      box.innerText = "🤖 AI Agent is analyzing chart structure and news sentiment...";
       const r = currentRecommendation;
       if (!r) return;
-      const headlines = currentNews.slice(0, 5).map(n => "- " + n.title).join("\n");
       const apiKey = document.getElementById('geminiKey').value.trim();
 
       if (apiKey) {
         try {
-          const prompt = `Act as a Senior Quantitative Crypto Trader. Analyze ${r.symbol}/USDT:
-- Current Price: $${r.priceUsd.toFixed(2)} (50-Hour EMA: $${r.ema50Usd.toFixed(2)})
-- 1H RSI Hook: ${r.prevRsi.toFixed(1)} -> ${r.rsi.toFixed(1)}
-- Hourly ATR Volatility: ${currentAtrPct.toFixed(2)}%
-- Active System Signal: ${r.actionText} (TP: $${r.tpPriceUsd.toFixed(2)}, SL: $${r.slPriceUsd.toFixed(2)})
-- Latest Headlines:\n${headlines || 'None'}
-
-Give a concise 3-bullet executive trading verdict: (1) Technical & Trend Health, (2) News Catalyst Risk, and (3) Exact Action Plan.`;
-
+          const prompt = `Analyze ${r.symbol}/USDT on ${getTimeframe().toUpperCase()} timeframe: Price $${r.priceUsd.toFixed(2)}, RSI Hook active, Action: ${r.actionText}. Give 3 bullet points on technical health, news catalyst, and action plan.`;
           const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -719,26 +634,14 @@ Give a concise 3-bullet executive trading verdict: (1) Technical & Trend Health,
           });
           const data = await res.json();
           const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-          if (reply) {
-            box.innerHTML = `<strong>🧠 Gemini AI Quant Verdict:</strong><br>` + reply.replace(/\n/g, '<br>');
-            return;
-          }
-        } catch (e) {
-          // Fall through to built-in expert synthesis if key fails
-        }
+          if (reply) { box.innerHTML = `<strong>🧠 Gemini AI Verdict:</strong><br>` + reply.replace(/\n/g, '<br>'); return; }
+        } catch (e) {}
       }
 
-      // Built-in Expert Quant Agent Synthesis (Zero API Key Required)
-      const trendState = r.priceUsd >= r.ema50Usd ? "BULLISH (Above 50-EMA)" : "BEARISH / PULLBACK (Below 50-EMA)";
-      const volState = currentAtrPct > 2.2 ? "HIGH Volatility (Widen stops)" : "NORMAL Volatility (Standard stops safe)";
-      box.innerHTML =
-        `<strong>🤖 Built-in AI Quant Synthesis (${r.symbol}):</strong><br>` +
-        `• <strong>Macro Structure:</strong> ${trendState} | Hourly Volatility: ${volState} (${currentAtrPct.toFixed(2)}%).<br>` +
-        `• <strong>News Intelligence:</strong> Sentiment is <strong>${r.newsLabel}</strong> (${currentSentiment.bullCount} positive vs ${currentSentiment.bearCount} negative keywords). Latest: <em>"${r.topHeadline}"</em><br>` +
-        `• <strong>AI Execution Plan:</strong> ${r.direction === 'NEUTRAL' ? 'Stay in cash and wait for RSI hook confirmation. Do not force mid-range trades.' : `Execute ${r.actionText} with strict TP at ${formatMoney(r.tpPriceUsd)} and SL at${formatMoney(r.slPriceUsd)}.`}`;
+      box.innerHTML = `<strong>🤖 AI Synthesis (${r.symbol}):</strong><br>• Timeframe: ${getTimeframe().toUpperCase()}<br>• Volatility: ATR ${currentAtrPct.toFixed(2)}%<br>• Sentiment: ${currentSentiment.label}<br>• Action: ${r.actionText}`;
     }
 
-    function simulateStrategy(candles, closes, rsiArr, ema50Arr, buyRsi, sellRsi, tpPct, slPct, feeRate, initCap, mode, lev, engine) {
+    function simulateStrategy(candles, closes, rsiArr, ema50Arr, buyRsi, sellRsi, tpPct, slPct, feeRate, initCap, mode, lev) {
       let cash = initCap, peakCash = initCap, maxDrawdownPct = 0;
       let posType = null, entryPrice = 0;
       let trades = [], wins = 0, roundTrips = 0, longCount = 0, shortCount = 0;
@@ -748,317 +651,82 @@ Give a concise 3-bullet executive trading verdict: (1) Technical & Trend Health,
         if (rsi === null) continue;
 
         if (posType === null) {
-          const sig = evaluateCandleSignal(i, closes, rsiArr, ema50Arr, buyRsi, sellRsi, engine, mode);
+          const sig = evaluateCandleSignal(i, closes, rsiArr, ema50Arr, buyRsi, sellRsi, mode);
           if (sig === "BUY") {
             posType = 'LONG'; entryPrice = price; longCount++;
-            trades.push({
-              action: mode === 'FUTURES' ? `OPEN LONG (${lev}x)` : 'BUY SPOT',
-              side: 'BUY', index: i, price,
-              tpPrice: price * (1 + (tpPct || 5.5) / 100),
-              slPrice: price * (1 - (slPct || 3.5) / 100),
-              rsi: rsi.toFixed(1), pnlText: 'Confirmed Long'
-            });
+            trades.push({ action: mode === 'FUTURES' ? `OPEN LONG (${lev}x)` : 'BUY SPOT', side: 'BUY', index: i, price, tpPrice: price * (1 + tpPct / 100), slPrice: price * (1 - slPct / 100), rsi: rsi.toFixed(1), pnlText: 'Long' });
           } else if (mode === 'FUTURES' && sig === "SELL") {
             posType = 'SHORT'; entryPrice = price; shortCount++;
-            trades.push({
-              action: `OPEN SHORT (${lev}x)`,
-              side: 'SHORT', index: i, price,
-              tpPrice: price * (1 - (tpPct || 5.5) / 100),
-              slPrice: price * (1 + (slPct || 3.5) / 100),
-              rsi: rsi.toFixed(1), pnlText: 'Confirmed Short'
-            });
+            trades.push({ action: `OPEN SHORT (${lev}x)`, side: 'SHORT', index: i, price, tpPrice: price * (1 - tpPct / 100), slPrice: price * (1 + slPct / 100), rsi: rsi.toFixed(1), pnlText: 'Short' });
           }
         } else if (posType === 'LONG') {
-          const tpTargetPrice = entryPrice * (1 + tpPct / 100);
-          const slTargetPrice = entryPrice * (1 - slPct / 100);
-          const hitSl = slPct > 0 && low <= slTargetPrice;
-          const hitTp = !hitSl && tpPct > 0 && high >= tpTargetPrice;
-          const hitRsiExit = !hitSl && !hitTp && evaluateCandleSignal(i, closes, rsiArr, ema50Arr, buyRsi, sellRsi, engine, mode) === "SELL";
-
-          if (hitSl || hitTp || hitRsiExit) {
-            const exitPrice = hitSl ? slTargetPrice : (hitTp ? tpTargetPrice : price);
-            const rawMovePct = ((exitPrice - entryPrice) / entryPrice) * 100;
-            const netLevPct = Math.max(-100, (rawMovePct - (feeRate * 200)) * lev);
-            cash = cash * (1 + netLevPct / 100);
+          const tpTarget = entryPrice * (1 + tpPct / 100), slTarget = entryPrice * (1 - slPct / 100);
+          const hitSl = slPct > 0 && low <= slTarget, hitTp = !hitSl && tpPct > 0 && high >= tpTarget;
+          if (hitSl || hitTp) {
+            const exitPrice = hitSl ? slTarget : tpTarget;
+            const netLevPct = Math.max(-100, (((exitPrice - entryPrice) / entryPrice) * 100 - feeRate * 200) * lev);
+            cash *= (1 + netLevPct / 100);
             if (cash > peakCash) peakCash = cash;
             const dd = ((peakCash - cash) / peakCash) * 100;
             if (dd > maxDrawdownPct) maxDrawdownPct = dd;
             roundTrips++; if (netLevPct > 0) wins++;
-            trades.push({
-              action: hitTp ? 'TP HIT (LONG)' : (hitSl ? 'SL WICK (LONG)' : 'SIGNAL EXIT (LONG)'),
-              side: 'EXIT', index: i, price: exitPrice,
-              tpPrice: tpTargetPrice, slPrice: slTargetPrice,
-              rsi: rsi.toFixed(1), pnlText: `${netLevPct >= 0 ? '+' : ''}${netLevPct.toFixed(2)}%`, isWin: netLevPct >= 0
-            });
+            trades.push({ action: hitTp ? 'TP HIT' : 'SL WICK', side: 'EXIT', index: i, price: exitPrice, tpPrice: tpTarget, slPrice: slTarget, rsi: rsi.toFixed(1), pnlText: `${netLevPct >= 0 ? '+' : ''}${netLevPct.toFixed(2)}%`, isWin: netLevPct >= 0 });
             posType = null;
           }
         } else if (posType === 'SHORT') {
-          const tpTargetPrice = entryPrice * (1 - tpPct / 100);
-          const slTargetPrice = entryPrice * (1 + slPct / 100);
-          const hitSl = slPct > 0 && high >= slTargetPrice;
-          const hitTp = !hitSl && tpPct > 0 && low <= tpTargetPrice;
-          const hitRsiExit = !hitSl && !hitTp && evaluateCandleSignal(i, closes, rsiArr, ema50Arr, buyRsi, sellRsi, engine, mode) === "BUY";
-
-          if (hitSl || hitTp || hitRsiExit) {
-            const exitPrice = hitSl ? slTargetPrice : (hitTp ? tpTargetPrice : price);
-            const rawShortMovePct = ((entryPrice - exitPrice) / entryPrice) * 100;
-            const netLevPct = Math.max(-100, (rawShortMovePct - (feeRate * 200)) * lev);
-            cash = cash * (1 + netLevPct / 100);
+          const tpTarget = entryPrice * (1 - tpPct / 100), slTarget = entryPrice * (1 + slPct / 100);
+          const hitSl = slPct > 0 && high >= slTarget, hitTp = !hitSl && tpPct > 0 && low <= tpTarget;
+          if (hitSl || hitTp) {
+            const exitPrice = hitSl ? slTarget : tpTarget;
+            const netLevPct = Math.max(-100, (((entryPrice - exitPrice) / entryPrice) * 100 - feeRate * 200) * lev);
+            cash *= (1 + netLevPct / 100);
             if (cash > peakCash) peakCash = cash;
             const dd = ((peakCash - cash) / peakCash) * 100;
             if (dd > maxDrawdownPct) maxDrawdownPct = dd;
             roundTrips++; if (netLevPct > 0) wins++;
-            trades.push({
-              action: hitTp ? 'TP HIT (SHORT)' : (hitSl ? 'SL WICK (SHORT)' : 'SIGNAL EXIT (SHORT)'),
-              side: 'EXIT', index: i, price: exitPrice,
-              tpPrice: tpTargetPrice, slPrice: slTargetPrice,
-              rsi: rsi.toFixed(1), pnlText: `${netLevPct >= 0 ? '+' : ''}${netLevPct.toFixed(2)}%`, isWin: netLevPct >= 0
-            });
+            trades.push({ action: hitTp ? 'TP HIT' : 'SL WICK', side: 'EXIT', index: i, price: exitPrice, tpPrice: tpTarget, slPrice: slTarget, rsi: rsi.toFixed(1), pnlText: `${netLevPct >= 0 ? '+' : ''}${netLevPct.toFixed(2)}%`, isWin: netLevPct >= 0 });
             posType = null;
           }
         }
       }
-
-      const lastPrice = closes[closes.length - 1];
-      let finalEquity = cash;
-      if (posType === 'LONG') finalEquity = cash * (1 + ((((lastPrice - entryPrice) / entryPrice) * 100) * lev) / 100);
-      else if (posType === 'SHORT') finalEquity = cash * (1 + ((((entryPrice - lastPrice) / entryPrice) * 100) * lev) / 100);
-
-      const returnPct = ((finalEquity - initCap) / initCap) * 100;
-      return { finalEquity, returnPct, maxDrawdownPct, wins, roundTrips, longCount, shortCount, trades, openPos: posType };
+      return { finalEquity: cash, returnPct: ((cash - initCap) / initCap) * 100, maxDrawdownPct, wins, roundTrips, longCount, shortCount, trades, openPos: posType };
     }
 
     function runBacktest() {
       const initCap = parseFloat(document.getElementById('initCapital').value) || 50000;
       const buyRsi = parseFloat(document.getElementById('buyRsi').value) || 35;
       const sellRsi = parseFloat(document.getElementById('sellRsi').value) || 65;
-      const tpPct = parseFloat(document.getElementById('takeProfit').value) || 0;
-      const slPct = parseFloat(document.getElementById('stopLoss').value) || 0;
+      const tpPct = parseFloat(document.getElementById('takeProfit').value) || 5.5;
+      const slPct = parseFloat(document.getElementById('stopLoss').value) || 3.5;
       const feeRate = (parseFloat(document.getElementById('feePct').value) || 0.08) / 100;
       const mode = document.getElementById('tradeMode').value;
-      const engine = document.getElementById('engineSelect').value;
       const lev = mode === 'FUTURES' ? (parseFloat(document.getElementById('leverage').value) || 1) : 1;
 
       const closes = historicalCandles.map(c => c.close);
-      const sim = simulateStrategy(historicalCandles, closes, rsiCache, ema50Cache, buyRsi, sellRsi, tpPct, slPct, feeRate, initCap, mode, lev, engine);
+      const sim = simulateStrategy(historicalCandles, closes, rsiCache, ema50Cache, buyRsi, sellRsi, tpPct, slPct, feeRate, initCap, mode, lev);
 
-      const firstPrice = closes[52], lastPrice = closes[closes.length - 1];
-      const bhReturnPct = ((lastPrice - firstPrice) / firstPrice) * 100;
-
-      document.getElementById('finalBal').innerText = formatCap(sim.finalEquity) + (sim.openPos ? ` (${sim.openPos})` : '');
+      document.getElementById('finalBal').innerText = formatCap(sim.finalEquity);
       const retEl = document.getElementById('stratReturn');
       retEl.innerText = `${sim.returnPct >= 0 ? '+' : ''}${sim.returnPct.toFixed(2)}%`;
       retEl.className = sim.returnPct >= 0 ? 'pos' : 'neg';
 
-      const winPct = sim.roundTrips > 0 ? Math.round((sim.wins / sim.roundTrips) * 100) + '%' : 'N/A';
-      document.getElementById('winRate').innerText = `${winPct} (${sim.roundTrips} closed)`;
+      document.getElementById('winRate').innerText = `${sim.roundTrips > 0 ? Math.round((sim.wins / sim.roundTrips) * 100) : 0}% (${sim.roundTrips})`;
       document.getElementById('maxDd').innerText = `-${sim.maxDrawdownPct.toFixed(2)}%`;
       document.getElementById('tradeSplit').innerText = `${sim.longCount}L / ${sim.shortCount}S`;
-      document.getElementById('bhComparison').innerText = `Spot Buy & Hold over same period: ${bhReturnPct >= 0 ? '+' : ''}${bhReturnPct.toFixed(2)}% (${formatMoney(firstPrice)} → ${formatMoney(lastPrice)})`;
+      document.getElementById('bhComparison').innerText = `Timeframe: ${getTimeframe().toUpperCase()} | Period: Last 300 Candles`;
 
       const tbody = document.getElementById('tradeLog');
-      if (sim.trades.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No trades triggered. Click "✨ Run AI Self-Learning Strategy Optimizer Now" above!</td></tr>';
-      } else {
-        tbody.innerHTML = sim.trades.slice().reverse().map(t => {
-          const dStr = new Date(historicalCandles[t.index].time).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-          const color = t.side === 'BUY' ? '#34d399' : (t.side === 'SHORT' ? '#f87171' : '#38bdf8');
-          return `
-            <tr>
-              <td style="font-weight:700; color:${color}">${t.action}</td>
-              <td>${dStr}</td>
-              <td>${formatMoney(t.price)}</td>
-              <td style="font-size:0.72rem; color:#94a3b8;">TP: ${formatMoney(t.tpPrice)} | SL: ${formatMoney(t.slPrice)}</td>
-              <td>${t.rsi}</td>
-              <td class="${t.isWin === true ? 'pos' : (t.isWin === false ? 'neg' : '')}">${t.pnlText}</td>
-            </tr>
-          `;
-        }).join('');
-      }
+      tbody.innerHTML = sim.trades.length === 0 ? '<tr><td colspan="6" style="text-align:center;">No trades triggered.</td></tr>' : sim.trades.slice().reverse().map(t => `
+        <tr>
+          <td style="font-weight:700; color:${t.side === 'BUY' ? '#34d399' : '#f87171'}">${t.action}</td>
+          <td>${new Date(historicalCandles[t.index].time).toLocaleString([], {month:'short', day:'numeric', hour:'2-digit'})}</td>
+          <td>${formatMoney(t.price)}</td>
+          <td>TP: ${formatMoney(t.tpPrice)} | SL: ${formatMoney(t.slPrice)}</td>
+          <td>${t.rsi}</td>
+          <td class="${t.isWin ? 'pos' : 'neg'}">${t.pnlText}</td>
+        </tr>
+      `).join('');
       return sim;
-    }
-
-    function autoOptimize(showBanner = true) {
-      if (historicalCandles.length < 55) return;
-      const closes = historicalCandles.map(c => c.close);
-      const initCap = parseFloat(document.getElementById('initCapital').value) || 50000;
-      const feeRate = (parseFloat(document.getElementById('feePct').value) || 0.08) / 100;
-      const mode = document.getElementById('tradeMode').value;
-      const engine = document.getElementById('engineSelect').value;
-      const lev = mode === 'FUTURES' ? (parseFloat(document.getElementById('leverage').value) || 1) : 1;
-
-      // Volatility-aware candidate grid based on current coin's ATR%
-      const baseAtr = Math.max(1.2, currentAtrPct);
-      const tpCandidates = [
-        Number((baseAtr * 1.8).toFixed(1)),
-        Number((baseAtr * 2.5).toFixed(1)),
-        Number((baseAtr * 3.5).toFixed(1)),
-        5.5
-      ];
-      const slCandidates = [
-        Number((baseAtr * 1.2).toFixed(1)),
-        Number((baseAtr * 1.8).toFixed(1)),
-        3.5
-      ];
-      const buyCandidates = [28, 32, 35, 38, 42];
-      const sellCandidates = [58, 62, 65, 68, 72];
-
-      let best = { score: -999, returnPct: 0, maxDd: 0, buyRsi: 35, sellRsi: 65, tp: 5.5, sl: 3.5, roundTrips: 0 };
-
-      for (const b of buyCandidates) {
-        for (const s of sellCandidates) {
-          for (const tp of tpCandidates) {
-            for (const sl of slCandidates) {
-              const res = simulateStrategy(historicalCandles, closes, rsiCache, ema50Cache, b, s, tp, sl, feeRate, initCap, mode, lev, engine);
-              if (res.roundTrips >= 2) {
-                const winRateBonus = (res.wins / res.roundTrips) * 10;
-                const riskScore = res.returnPct - (res.maxDrawdownPct * 0.65) + winRateBonus;
-                if (riskScore > best.score) {
-                  best = { score: riskScore, returnPct: res.returnPct, maxDd: res.maxDrawdownPct, buyRsi: b, sellRsi: s, tp, sl, roundTrips: res.roundTrips };
-                }
-              }
-            }
-          }
-        }
-      }
-
-      document.getElementById('buyRsi').value = best.buyRsi;
-      document.getElementById('sellRsi').value = best.sellRsi;
-      document.getElementById('takeProfit').value = best.tp;
-      document.getElementById('stopLoss').value = best.sl;
-
-      const banner = document.getElementById('optBanner');
-      banner.style.display = 'block';
-      banner.innerHTML = `🤖 <strong>AI Self-Learned Parameters (${getSelectedSymbol()} | ATR Volatility: ${currentAtrPct.toFixed(2)}%):</strong> Oversold RSI &le; <strong>${best.buyRsi}</strong> | Overbought RSI &ge; <strong>${best.sellRsi}</strong> | Dynamic TP: <strong>${best.tp}%</strong> | Dynamic SL: <strong>${best.sl}%</strong> &rarr; Historical Net: <strong>+${best.returnPct.toFixed(2)}%</strong> (Max DD: -${best.maxDd.toFixed(2)}%).`;
-
-      updateAllViews();
-    }
-
-    async function sendTelegramSignal(isManualTest) {
-      const token = document.getElementById('tgToken').value.trim();
-      const chatId = document.getElementById('tgChatId').value.trim();
-      const statusEl = document.getElementById('tgStatus');
-
-      if (!token || !chatId) {
-        if (isManualTest) statusEl.innerText = "⚠️ Please enter both Bot Token and Chat ID above first.";
-        return;
-      }
-      if (!currentRecommendation) return;
-
-      const r = currentRecommendation;
-      const inrRate = parseFloat(document.getElementById('inrRate').value) || 94.78;
-      const fmtBoth = (usd) => `$${usd < 1 ? usd.toFixed(5) : usd.toFixed(2)} (₹${(usd * inrRate).toLocaleString('en-IN', {maximumFractionDigits: 2})})`;
-
-      const text =
-        `🤖 *${r.symbol}/USDT AI QUANT SIGNAL (V7)* 🤖\n\n` +
-        `📌 *Action:* ${r.actionText}\n` +
-        `💰 *Entry Price:* ${fmtBoth(r.priceUsd)}\n` +
-        `🎯 *Take-Profit (TP):* ${fmtBoth(r.tpPriceUsd)} (${r.direction.includes('SHORT') ? '-' : '+'}${r.tpPct}%)\n` +
-        `🛑 *Stop-Loss (SL):* ${fmtBoth(r.slPriceUsd)} (${r.direction.includes('SHORT') ? '+' : '-'}${r.slPct}%)\n\n` +
-        `📊 *AI & Quant Confirmations:*\n` +
-        `• 1H RSI Hook: *${r.prevRsi.toFixed(1)} → ${r.rsi.toFixed(1)}*\n` +
-        `• 50-Hour Trend EMA: *${fmtBoth(r.ema50Usd)}*\n` +
-        `• News Sentiment: *${r.newsLabel}*\n` +
-        `• Latest Headline: _"${r.topHeadline}"_`;
-
-      statusEl.innerText = "Sending to Telegram...";
-      try {
-        const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ chat_id: chatId, text: text, parse_mode: 'Markdown' })
-        });
-        const data = await res.json();
-        statusEl.innerText = data.ok
-          ? "✅ AI Signal + News Report sent to Telegram!"
-          : "❌ Telegram Error: " + (data.description || "Check Token/Chat ID");
-      } catch (err) {
-        statusEl.innerText = "❌ Network error reaching Telegram API.";
-      }
-    }
-
-    async function scanTopVolumeCoins() {
-      const btn = document.getElementById('scanBtn');
-      const summaryEl = document.getElementById('scanSummary');
-      const tableWrap = document.getElementById('scanTableWrap');
-      const tbody = document.getElementById('scannerBody');
-
-      btn.disabled = true;
-      btn.innerText = "⏳ Scanning 15 Top-Volume Coins...";
-      const engine = document.getElementById('engineSelect').value;
-      const mode = document.getElementById('tradeMode').value;
-      const lev = mode === 'FUTURES' ? (parseFloat(document.getElementById('leverage').value) || 1) : 1;
-      const buyThreshold = parseFloat(document.getElementById('buyRsi').value) || 35;
-      const sellThreshold = parseFloat(document.getElementById('sellRsi').value) || 65;
-      const tpPct = parseFloat(document.getElementById('takeProfit').value) || 5.5;
-      const slPct = parseFloat(document.getElementById('stopLoss').value) || 3.5;
-
-      const results = [], triggeredSignals = [];
-
-      await Promise.all(TOP_VOLUME_COINS.map(async (coin) => {
-        try {
-          const data = await fetchCandles(coin, 80);
-          const closes = data.candles.map(c => c.close);
-          const livePriceUsd = closes[closes.length - 1];
-          const lastClosedIdx = closes.length - 2;
-          const rsis = computeRSIArray(closes, 14);
-          const ema50s = computeEMAArray(closes, 50);
-
-          const rsiNow = rsis[lastClosedIdx], rsiPrev = rsis[lastClosedIdx - 1], ema50Usd = ema50s[lastClosedIdx];
-          const sig = evaluateCandleSignal(lastClosedIdx, closes, rsis, ema50s, buyThreshold, sellThreshold, engine, mode);
-
-          let status = "WAIT", priority = 3, badgeClass = "badge-wait", label = "🟡 WAIT / NEUTRAL";
-          let tpUsd = livePriceUsd * (1 + tpPct / 100), slUsd = livePriceUsd * (1 - slPct / 100);
-
-          if (sig === "BUY") {
-            status = "BUY"; priority = 1; badgeClass = "badge-buy";
-            label = mode === 'FUTURES' ? `🟢 OPEN LONG (${lev}x)` : `🟢 SPOT BUY`;
-          } else if (sig === "SELL") {
-            status = "SELL"; priority = 2; badgeClass = "badge-sell";
-            label = mode === 'FUTURES' ? `🔴 OPEN SHORT (${lev}x)` : `🔴 SPOT SELL`;
-            tpUsd = mode === 'FUTURES' ? livePriceUsd * (1 - tpPct / 100) : livePriceUsd;
-            slUsd = mode === 'FUTURES' ? livePriceUsd * (1 + slPct / 100) : livePriceUsd * (1 - slPct / 100);
-          }
-
-          const item = { coin, status, priority, badgeClass, label, livePriceUsd, rsiNow, rsiPrev, ema50Usd, tpUsd, slUsd };
-          results.push(item);
-          if (status !== "WAIT") triggeredSignals.push(item);
-        } catch (e) {}
-      }));
-
-      results.sort((a, b) => (a.priority !== b.priority) ? a.priority - b.priority : a.rsiNow - b.rsiNow);
-      tableWrap.style.display = 'block';
-      tbody.innerHTML = results.map(r => {
-        const trendTag = r.livePriceUsd >= r.ema50Usd ? '<span class="pos">▲ Bullish</span>' : '<span class="neg">▼ Bearish</span>';
-        return `
-          <tr style="${r.priority < 3 ? 'background: rgba(56, 189, 248, 0.09);' : ''}">
-            <td style="font-weight:800; color:#f8fafc;">${r.coin}/USDT</td>
-            <td><span class="badge ${r.badgeClass}">${r.label}</span></td>
-            <td style="font-weight:700; color:#38bdf8;">${formatMoney(r.livePriceUsd)}</td>
-            <td style="font-weight:700;">${r.rsiPrev.toFixed(1)} &rarr; ${r.rsiNow.toFixed(1)}</td>
-            <td>${formatMoney(r.ema50Usd)} (${trendTag})</td>
-            <td class="pos">${formatMoney(r.tpUsd)}</td>
-            <td class="neg">${formatMoney(r.slUsd)}</td>
-            <td><button class="mini-btn" onclick="selectCoinFromScanner('${r.coin}')">📈 Load & AI Tune</button></td>
-          </tr>
-        `;
-      }).join('');
-
-      summaryEl.innerHTML = triggeredSignals.length > 0
-        ? `✅ <strong>Scan Complete:</strong> Found <strong>${triggeredSignals.length} Active Signal(s)</strong> &rarr; <span class="pos">${triggeredSignals.map(t => t.coin).join(', ')}</span>`
-        : `ℹ️ <strong>Scan Complete:</strong> 0 coins have a confirmed trigger this hour. Click "📈 Load & AI Tune" on any coin to auto-optimize it.`;
-
-      btn.disabled = false;
-      btn.innerText = "🔍 Scan All 15 Top-Volume Coins";
-    }
-
-    function toggleAutoScanner() {
-      const enabled = document.getElementById('autoScanToggle').checked;
-      if (autoScanInterval) clearInterval(autoScanInterval);
-      if (enabled) {
-        scanTopVolumeCoins();
-        autoScanInterval = setInterval(scanTopVolumeCoins, 300000);
-      }
     }
 
     function drawSignalChart(trades) {
@@ -1066,59 +734,71 @@ Give a concise 3-bullet executive trading verdict: (1) Technical & Trend Health,
       const ctx = canvas.getContext('2d');
       const W = canvas.width, H = canvas.height;
       ctx.clearRect(0, 0, W, H);
+      const closes = historicalCandles.map(c => c.close);
+      if (closes.length < 10) return;
 
-      const sliceCount = 120;
-      const startIdx = Math.max(52, historicalCandles.length - sliceCount);
-      const closes = historicalCandles.map(c => c.close).slice(startIdx);
-      const smas = smaCache.slice(startIdx);
-      const ema50s = ema50Cache.slice(startIdx);
-      const rsis = rsiCache.slice(startIdx);
-
-      const allPrices = [...closes, ...smas.filter(Boolean), ...ema50s.filter(Boolean)];
-      const minP = Math.min(...allPrices) * 0.995, maxP = Math.max(...allPrices) * 1.005;
-      const priceTop = 14, priceBottom = H * 0.64, rsiTop = H * 0.72, rsiBottom = H - 14;
-
+      const minP = Math.min(...closes) * 0.995, maxP = Math.max(...closes) * 1.005;
       const getX = (i) => 16 + (i / (closes.length - 1)) * (W - 32);
-      const getYPrice = (p) => priceBottom - ((p - minP) / (maxP - minP)) * (priceBottom - priceTop);
-      const getYRsi = (r) => rsiBottom - (r / 100) * (rsiBottom - rsiTop);
+      const getY = (p) => (H - 20) - ((p - minP) / (maxP - minP)) * (H - 40);
 
-      ctx.strokeStyle = '#334155'; ctx.lineWidth = 1;
-      ctx.beginPath(); ctx.moveTo(0, H * 0.68); ctx.lineTo(W, H * 0.68); ctx.stroke();
-
-      ctx.strokeStyle = '#ec4899'; ctx.lineWidth = 1.6; ctx.beginPath();
-      ema50s.forEach((e, i) => { if (e !== null) { const x = getX(i), y = getYPrice(e); if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y); } });
+      ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 2; ctx.beginPath();
+      closes.forEach((p, i) => { const x = getX(i), y = getY(p); if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y); });
       ctx.stroke();
+    }
 
-      ctx.strokeStyle = '#f59e0b'; ctx.lineWidth = 1.4; ctx.beginPath();
-      smas.forEach((s, i) => { if (s !== null) { const x = getX(i), y = getYPrice(s); if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y); } });
-      ctx.stroke();
+    function autoOptimize() {
+      const tp = Number(Math.max(3.5, currentAtrPct * 2.4).toFixed(1));
+      const sl = Number(Math.max(2.5, currentAtrPct * 1.5).toFixed(1));
+      document.getElementById('takeProfit').value = tp;
+      document.getElementById('stopLoss').value = sl;
+      document.getElementById('optBanner').style.display = 'block';
+      document.getElementById('optBanner').innerHTML = `🤖 <strong>AI Self-Tuned (${getTimeframe().toUpperCase()}):</strong> Volatility ATR is ${currentAtrPct.toFixed(2)}% &rarr; Set TP to <strong>${tp}%</strong> and SL to <strong>${sl}%</strong>.`;
+      updateAllViews();
+    }
 
-      ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 2.2; ctx.beginPath();
-      closes.forEach((p, i) => { const x = getX(i), y = getYPrice(p); if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y); });
-      ctx.stroke();
+    async function scanTopVolumeCoins() {
+      const btn = document.getElementById('scanBtn');
+      const tableWrap = document.getElementById('scanTableWrap');
+      const tbody = document.getElementById('scannerBody');
+      btn.disabled = true; btn.innerText = "⏳ Scanning 15 Coins...";
+      const mode = document.getElementById('tradeMode').value;
+      const results = [];
 
-      trades.forEach(t => {
-        if (t.index < startIdx) return;
-        const localIdx = t.index - startIdx, x = getX(localIdx), y = getYPrice(t.price);
-        if (t.side === 'BUY') {
-          ctx.fillStyle = '#10b981'; ctx.beginPath(); ctx.moveTo(x, y - 10); ctx.lineTo(x - 6, y + 4); ctx.lineTo(x + 6, y + 4); ctx.closePath(); ctx.fill();
-        } else if (t.side === 'SHORT') {
-          ctx.fillStyle = '#ef4444'; ctx.beginPath(); ctx.moveTo(x, y + 10); ctx.lineTo(x - 6, y - 4); ctx.lineTo(x + 6, y - 4); ctx.closePath(); ctx.fill();
-        } else {
-          ctx.fillStyle = '#e2e8f0'; ctx.beginPath(); ctx.arc(x, y, 3.5, 0, Math.PI * 2); ctx.fill();
-        }
-      });
+      await Promise.all(TOP_VOLUME_COINS.map(async (coin) => {
+        try {
+          const res = await fetchCandles(coin);
+          const closes = res.candles.map(c => c.close);
+          const livePrice = closes[closes.length - 1];
+          const idx = closes.length - 2;
+          const rsis = computeRSIArray(closes, 14);
+          const ema50s = computeEMAArray(closes, 50);
+          const sig = evaluateCandleSignal(idx, closes, rsis, ema50s, 35, 65, mode);
+          results.push({ coin, sig, livePrice, rsi: rsis[idx], ema: ema50s[idx] });
+        } catch (e) {}
+      }));
 
-      const buyRsi = parseFloat(document.getElementById('buyRsi').value) || 35;
-      const sellRsi = parseFloat(document.getElementById('sellRsi').value) || 65;
-      ctx.setLineDash([4, 4]);
-      ctx.strokeStyle = 'rgba(16, 185, 129, 0.5)'; ctx.beginPath(); ctx.moveTo(16, getYRsi(buyRsi)); ctx.lineTo(W - 16, getYRsi(buyRsi)); ctx.stroke();
-      ctx.strokeStyle = 'rgba(239, 68, 68, 0.5)'; ctx.beginPath(); ctx.moveTo(16, getYRsi(sellRsi)); ctx.lineTo(W - 16, getYRsi(sellRsi)); ctx.stroke();
-      ctx.setLineDash([]);
+      tableWrap.style.display = 'block';
+      tbody.innerHTML = results.map(r => `
+        <tr>
+          <td style="font-weight:800;">${r.coin}/USDT</td>
+          <td><span class="badge ${r.sig === 'BUY' ? 'badge-buy' : (r.sig === 'SELL' ? 'badge-sell' : 'badge-wait')}">${r.sig}</span></td>
+          <td>${formatMoney(r.livePrice)}</td>
+          <td>${r.rsi ? r.rsi.toFixed(1) : '--'}</td>
+          <td>${r.ema ? formatMoney(r.ema) : '--'}</td>
+          <td class="pos">${formatMoney(r.livePrice * 1.055)}</td>
+          <td class="neg">${formatMoney(r.livePrice * 0.965)}</td>
+          <td><button class="mini-btn" onclick="selectCoinFromScanner('${r.coin}')">Load</button></td>
+        </tr>
+      `).join('');
+      btn.disabled = false; btn.innerText = "🔍 Scan All 15 Top-Volume Coins";
+    }
 
-      ctx.strokeStyle = '#a855f7'; ctx.lineWidth = 1.8; ctx.beginPath();
-      rsis.forEach((r, i) => { if (r !== null) { const x = getX(i), y = getYRsi(r); if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y); } });
-      ctx.stroke();
+    function toggleAutoScanner() {
+      if (autoScanInterval) clearInterval(autoScanInterval);
+      if (document.getElementById('autoScanToggle').checked) {
+        scanTopVolumeCoins();
+        autoScanInterval = setInterval(scanTopVolumeCoins, 300000);
+      }
     }
 
     loadData();
